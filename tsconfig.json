@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "types": ["jest", "node"],
+    "lib": [
+      "es6",
+      "dom"
+    ],
+    "strict": true,
+    "esModuleInterop": true,
+    "preserveConstEnums": true,
+    "experimentalDecorators": true,
+    "noImplicitAny": false,
+    "rootDir": ".",
+    "outDir": ".dist",
+    "resolveJsonModule": true
+  },
+  "include": [
+    "app/**/**.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts"
+  ]
+}

@@ -1,0 +1,10 @@
+custom:
+  documentation: ${file(serverless.doc.yml):documentation}
+
+functions:
+  myFunc:
+    events:
+      - http:
+          path: getStuff
+          method: get
+          documentation: ${file(serverless.doc.yml):endpoints.myFunc}

@@ -1,0 +1,104 @@
+service: demo-api
+app: demo
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: dev
+  region: eu-west-1
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "s3:ListBucket"
+      Resource:
+        - { "Fn::Join" : ["", ["arn:aws:s3:::", { "Ref" : "ServerlessDeploymentBucket" } ] ]  }
+    - Effect: "Allow"
+      Action:
+        - s3:PutObject
+      Resource:
+        Fn::Join:
+          - ""
+          - - "arn:aws:s3:::"
+            - "Ref" : "ServerlessDeploymentBucket"
+            - "/*"
+    - Effect: "Allow"
+      Action:
+        - dynamoDb:Query
+        - dynamoDb:Scan
+        - dynamoDb:GetItem
+        - dynamoDb:PutItem
+        - dynamoDb:UpdateItem
+        - dynamoDb:DeleteItem
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PEOPLE_TABLE}"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+      Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.PEOPLE_TABLE}/index/*"
+
+# you can define service wide environment variables here
+  environment:
+    PEOPLE_TABLE: '${self:service}-${self:provider.stage}-vehicle-table'
+    API_PEOPLE: 'https://swapi.py4e.com/api/people/'
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-offline
+  - serverless-openapi-documentation
+  - serverless-openapi-typescript
+
+custom:
+  documentation:
+    version: '1'
+    title: 'My Api'
+    description: 'This is my Api'
+    # https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#securitySchemeObject
+    securitySchemes: { }
+    # https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.2.md#security-requirement-object
+    security: { }
+    models: { }
+    typescriptApiPath: 'api.d.ts'
+    tsconfigPath: 'tsconfig.json'
+
+functions:
+  getVehicle:
+    handler: app/src/Application/Handler/VehicleHandler.getVehicle
+    events:
+      - http:
+          documentation: ~
+          method: get
+          path: vehicles/{vehicleId}
+  saveVehicle:
+    handler: app/src/Application/Handler/VehicleHandler.saveVehicle
+    events:
+      - http:
+          documentation: ~
+          method: post
+          path: vehicles
+          request:
+            template:
+              application/json: '{ "httpMethod" : "$context.httpMethod" }'
+  getPeople:
+    handler: app/src/Application/Handler/PeopleHandler.getPeople
+    events:
+      - http:
+          documentation: ~
+          method: get
+          path: people/{peopleId}
+
+resources:
+  Resources:
+    PeopleDynamoDBTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.PEOPLE_TABLE}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1

@@ -1,0 +1,9 @@
+openapi: 3.0.0
+components:
+  schemas: {}
+  securitySchemes: {}
+info:
+  title: My Api
+  description: This is my Api
+  version: '1'
+paths: {}
